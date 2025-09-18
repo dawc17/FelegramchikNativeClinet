@@ -1,20 +1,32 @@
-// FelegramchikNativeClinet.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <asio.hpp>
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	try {
+		asio::io_context io_context;
+
+		asio::ip::address address = asio::ip::make_address("127.0.0.1");
+		asio::ip::tcp::endpoint endpoint(address, 1337);
+		asio::ip::tcp::socket socket(io_context);
+
+		socket.connect(endpoint);
+		std::cout << "Connected to server. \n";
+
+		std::cout << "Enter message: ";
+		std::string message;
+		std::getline(std::cin, message);
+		asio::write(socket, asio::buffer(message));
+
+		std::array<char, 1024> buffer;
+		size_t length = socket.read_some(asio::buffer(buffer));
+		std::cout << "Reply from server: ";
+		std::cout.write(buffer.data(), length);
+		std::cout << std::endl;
+	}
+	catch (const std::exception& e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+	}
+	return 0;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
