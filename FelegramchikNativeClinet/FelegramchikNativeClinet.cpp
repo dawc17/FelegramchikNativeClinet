@@ -4,6 +4,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <array>
 
 std::mutex cout_mutex;
 
@@ -25,13 +26,15 @@ int main()
 
         socket.connect(endpoint);
 
-        auto local_endpoint = socket.local_endpoint();
-        std::string local_ip = local_endpoint.address().to_string();
-        int local_port = local_endpoint.port();
-
         std::cout << "Connected to server at " << endpoint << "\n";
-        std::cout << "Your endpoint: [" << local_ip << ":" << local_port << "]\n";
-        std::cout << "Type your messages and press Enter to send. Type 'quit' to exit.\n\n";
+
+        // Prompt for and send nickname
+        std::cout << "Please enter your nickname: ";
+        std::string nickname;
+        std::getline(std::cin, nickname);
+        asio::write(socket, asio::buffer(nickname + "\n"));
+
+        std::cout << "\nWelcome to the chat! Type 'quit' to exit.\n\n";
 
         std::atomic<bool> running(true);
 
@@ -64,14 +67,8 @@ int main()
                         // clear the prompt line, print the message, then reprint the prompt
                         std::cout << "\r" << std::string(80, ' ') << "\r";
 
-                        std::string server_ip = socket.remote_endpoint().address().to_string();
-                        int server_port = socket.remote_endpoint().port();
                         std::string message(buffer.data(), length);
-                        std::cout << "[" << server_ip << ":" << server_port << "] " << message;
-
-                        if (length > 0 && buffer[length - 1] != '\n') {
-                            std::cout << std::endl;
-                        }
+                        std::cout << message;
 
                         std::cout << "Enter message: " << std::flush;
                     }
